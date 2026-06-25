@@ -221,3 +221,8 @@ What's covered:
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
+
+## Related projects / See also
+- ⬇️ **Used by:** [skchat](https://github.com/smilinTux/skchat) / [skcomms](https://github.com/smilinTux/skcomms) — hybrid post-quantum DMs in the app + envelope/DM KEM.
+- ↔️ **Sibling:** [sk_pgp](https://github.com/smilinTux/sk_pgp) — the Python OpenPGP-PQC companion (the PGPy replacement / signing engine).
+- 📐 **Standards:** [sk-standards](https://github.com/smilinTux/sk-standards) — crypto · data-flow · version · doc/SOP.
