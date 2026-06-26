@@ -12,6 +12,18 @@
 library;
 
 export 'src/combiner.dart' show HybridCombiner;
+export 'src/dm_ratchet.dart'
+    show
+        DmRatchet,
+        deriveDmMessageKey,
+        newEpochSecret,
+        wrapDmEpochSecret,
+        unwrapDmEpochSecret,
+        wrappedPayloadLen,
+        kEpochSecretLen,
+        kMessageKeyLen,
+        kDefaultRekeyMsgBound,
+        kDefaultRekeyAgeSeconds;
 export 'src/hybrid_kem.dart' show HybridKem, WireFormat;
 export 'src/hybrid_kem_impl.dart' show HybridKemImpl;
 export 'src/mlkem_backend.dart' show MlKem768Backend;
