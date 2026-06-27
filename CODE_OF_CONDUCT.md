@@ -69,7 +69,7 @@ or offline event.
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to
 the community leaders responsible for enforcement (smilinTux / SKWorld) via the
-maintainer contact listed on the [`smilinTux/sk_pqc`](https://github.com/smilinTux/sk_pqc)
+maintainer contact listed on the [`smilinTux/sk-pqc-dart`](https://github.com/smilinTux/sk-pqc-dart)
 GitHub organization. All complaints will be reviewed and investigated promptly and
 fairly.
 

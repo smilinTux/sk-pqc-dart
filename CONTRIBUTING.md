@@ -61,7 +61,7 @@ flowchart LR
 ### Setup
 
 ```bash
-git clone https://github.com/smilinTux/sk_pqc
+git clone https://github.com/smilinTux/sk-pqc-dart
 cd sk_pqc
 dart pub get
 ```

@@ -112,7 +112,7 @@ format and combiner are frozen across `0.x`; any break ships under a new suite i
 
 - Report privately via the repository's **GitHub Security Advisories**
   ("Report a vulnerability" on the Security tab of
-  [`smilinTux/sk_pqc`](https://github.com/smilinTux/sk_pqc)), or
+  [`smilinTux/sk-pqc-dart`](https://github.com/smilinTux/sk-pqc-dart)), or
 - email the maintainers (smilinTux / SKWorld) at the address listed on the GitHub org.
 
 Please include: affected version, platform (web/native + liboqs/noble version), a

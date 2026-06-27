@@ -2,7 +2,7 @@
 
 > ⚠️ **Experimental · pre-1.0 · NOT independently security-audited.** A clean-room
 > **reference implementation** — tested and cross-impl-parity-verified against our Python
-> (`sk-pqc`) and Rust (`sk-core`) builds, but with **no third-party security audit,
+> (`sk-pqc`) and Rust (`sk-pqc`) builds, but with **no third-party security audit,
 > fuzzing, or formal review**. It binds vetted libraries (`liboqs`/ML-KEM,
 > `package:cryptography`, `@noble/post-quantum` on web); the original code is the wiring.
 > **Review it yourself before production use.**
@@ -241,7 +241,7 @@ rekey (50 messages **or** 7 days) starts a fresh independent epoch — forward
 secrecy across the boundary, post-compromise security within.
 
 ```dart
-// Per-message key (matches Python skchat.dm_ratchet + the Rust sk-core byte-for-byte):
+// Per-message key (matches Python skchat.dm_ratchet + the Rust sk-pqc byte-for-byte):
 final mk = await deriveDmMessageKey(epochSecret, epoch, index);
 
 // Distribute an epoch secret over the hybrid KEM (once per epoch, not per message):
@@ -260,7 +260,7 @@ key  = HKDF-SHA256(IKM = epoch_secret, salt, info, L = 32)
 
 > **HONESTY — this layer is a BRIDGE, not its permanent home.** The long-term
 > plan (P7) is for this ratchet key schedule to live **once** in the shared
-> **Rust core** (`sk-core/src/ratchet.rs`) and be reached from Dart over **FFI**
+> **Rust core** (`sk-pqc/src/ratchet.rs`) and be reached from Dart over **FFI**
 > — exactly like the ML-KEM-768 leg already reaches liboqs — instead of a
 > permanent hand-maintained Dart copy. Three parallel implementations (Python,
 > Rust, Dart) of a security-critical schedule can silently drift, so this Dart

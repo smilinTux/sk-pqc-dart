@@ -4,8 +4,8 @@ description: >-
   Dart and Flutter across web and native. Binds audited primitives (liboqs,
   noble-post-quantum) with a standard HKDF-SHA256 hybrid combiner. KEM-only.
 version: 0.1.0
-repository: https://github.com/smilinTux/sk_pqc
-issue_tracker: https://github.com/smilinTux/sk_pqc/issues
+repository: https://github.com/smilinTux/sk-pqc-dart
+issue_tracker: https://github.com/smilinTux/sk-pqc-dart/issues
 # pub.dev allows at most 5 topics; chosen for AI/human search-discoverability.
 topics:
   - post-quantum

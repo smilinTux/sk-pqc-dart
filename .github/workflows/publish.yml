@@ -1,6 +1,6 @@
 # Publish sk_pqc to pub.dev via AUTOMATED PUBLISHING (OIDC) — no token stored.
 # One-time setup (Chef, browser, AFTER the package exists): pub.dev → sk_pqc → Admin →
-#   Automated publishing → Enable GitHub Actions, repo smilinTux/sk_pqc, tag pattern v{{version}}.
+#   Automated publishing → Enable GitHub Actions, repo smilinTux/sk-pqc-dart, tag pattern v{{version}}.
 # pub.dev ONLY publishes on a git tag push. The first ever publish needs an interactive
 # `dart pub login` (Google OAuth) — automated publishing covers updates after that.
 name: Publish to pub.dev

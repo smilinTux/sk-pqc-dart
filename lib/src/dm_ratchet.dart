@@ -11,7 +11,7 @@ import 'types.dart';
 ///
 /// ## What this is
 /// A **thin** Dart re-implementation of the 1:1 DM epoch-ratchet *key schedule*
-/// (`skchat/dm_ratchet.py` / `sk-core/src/ratchet.rs`). Per-conversation
+/// (`skchat/dm_ratchet.py` / `sk-pqc/src/ratchet.rs`). Per-conversation
 /// **epoch secrets** are distributed once per epoch via the vetted [HybridKem]
 /// ([HybridKemImpl]); per-message keys derive symmetrically and
 /// index-addressably from the epoch secret (loss/reorder tolerant). Periodic
@@ -23,7 +23,7 @@ import 'types.dart';
 ///
 /// ## HONESTY — this is a BRIDGE, not a permanent home
 /// The long-term plan (P7) is for the ratchet key schedule to live **once** in
-/// the shared Rust core ([`sk-core/src/ratchet.rs`]) and be reached from Dart
+/// the shared Rust core ([`sk-pqc/src/ratchet.rs`]) and be reached from Dart
 /// via **FFI**, exactly as the ML-KEM-768 leg already reaches liboqs. Keeping a
 /// hand-written Dart copy of a security-critical key schedule indefinitely
 /// means three implementations (Python, Rust, Dart) that can silently drift.
@@ -113,7 +113,7 @@ Uint8List _concat(List<Uint8List> parts) {
 /// independently of the others (loss/reorder tolerant).
 ///
 /// Matches `skchat.dm_ratchet.derive_dm_message_key` and
-/// `sk_core::ratchet::derive_dm_message_key` exactly (see the cross-language
+/// `sk_pqc::ratchet::derive_dm_message_key` exactly (see the cross-language
 /// KAT vectors in `test/dm_ratchet_test.dart`).
 Future<Uint8List> deriveDmMessageKey(
   Uint8List epochSecret,
