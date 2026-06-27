@@ -2,7 +2,10 @@
 
 ## 0.1.0
 
-Initial release.
+Initial release — **published to pub.dev** as
+[`sk_pqc`](https://pub.dev/packages/sk_pqc) (`dart pub add sk_pqc`). Companion
+packages: PyPI [`sk-pqc`](https://pypi.org/project/sk-pqc/) and crates.io
+[`sk-pqc`](https://crates.io/crates/sk-pqc) — all import as `sk_pqc`.
 
 - Hybrid post-quantum KEM with suite id `x25519-mlkem768` (X25519 + ML-KEM-768,
   FIPS 203).

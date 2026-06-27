@@ -1,5 +1,13 @@
 # sk_pqc
 
+[![pub package](https://img.shields.io/pub/v/sk_pqc.svg)](https://pub.dev/packages/sk_pqc)
+[![pub points](https://img.shields.io/pub/points/sk_pqc.svg)](https://pub.dev/packages/sk_pqc/score)
+[![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
+```bash
+dart pub add sk_pqc      # or:  flutter pub add sk_pqc
+```
+
 > ⚠️ **Experimental · pre-1.0 · NOT independently security-audited.** A clean-room
 > **reference implementation** — tested and cross-impl-parity-verified against our Python
 > (`sk-pqc`) and Rust (`sk-pqc`) builds, but with **no third-party security audit,
@@ -37,7 +45,8 @@ final ss   = await kem.decapsulate(enc.ciphertext, keys.privateKey); // == enc.s
 One Dart API (`HybridKem`) fans out to two audited ML-KEM backends chosen at
 compile time by conditional import. The X25519 leg and the HKDF combiner are the
 same `package:cryptography` code on every platform — only the ML-KEM-768 leg
-changes between web and native.
+changes between web and native. Full diagrams + source map:
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ```mermaid
 flowchart TD
@@ -325,6 +334,8 @@ What's covered:
 Apache-2.0. See [LICENSE](LICENSE).
 
 ## Related projects / See also
+- 📖 **Architecture:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — mermaid data-flow (web noble / native liboqs backends + KEM/ratchet) + source map.
+- ↔️ **Siblings (same suite, all import as `sk_pqc`):** PyPI [`sk-pqc`](https://pypi.org/project/sk-pqc/) ([sk-pqc-py](https://github.com/smilinTux/sk-pqc-py)) · crates.io [`sk-pqc`](https://crates.io/crates/sk-pqc) ([sk-pqc-rs](https://github.com/smilinTux/sk-pqc-rs)).
 - ⬇️ **Used by:** [skchat](https://github.com/smilinTux/skchat) / [skcomms](https://github.com/smilinTux/skcomms) — hybrid post-quantum DMs in the app + envelope/DM KEM.
-- ↔️ **Sibling:** [sk_pgp](https://github.com/smilinTux/sk_pgp) — the Python OpenPGP-PQC companion (the PGPy replacement / signing engine).
+- 🔏 **Companion:** [sk_pgp](https://github.com/smilinTux/sk_pgp) — the Python OpenPGP-PQC signing engine (the PGPy replacement).
 - 📐 **Standards:** [sk-standards](https://github.com/smilinTux/sk-standards) — crypto · data-flow · version · doc/SOP.
