@@ -1,0 +1,28 @@
+name: sk_pqc_demo
+description: >-
+  Minimal Flutter demo proving the mobile story for sk_pqc: a button runs a
+  hybrid X25519 + ML-KEM-768 (FIPS 203) keygen -> encapsulate -> decapsulate
+  round-trip via the sk-pqc-rs Rust core over flutter_rust_bridge, and shows the
+  two shared secrets match. Hybrid = secure if EITHER leg holds; not
+  "quantum-proof"; KEM-only.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # The sibling sk_pqc package (frb Rust core binding + pure-Dart KEM/ratchet).
+  sk_pqc:
+    path: ../..
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
