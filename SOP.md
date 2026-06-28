@@ -256,6 +256,12 @@ globalThis.skPqc = {
 };
 ```
 
+### Front-end / Exposure
+
+Per [sk-standards `UNIFIED_INGRESS_STANDARD.md`](https://github.com/smilinTux/sk-standards/blob/main/standards/UNIFIED_INGRESS_STANDARD.md):
+**N/A — no network surface (library).** `sk_pqc` is a published pub.dev package; it has no
+daemon, port, or listener and answers no public `:443` route.
+
 ---
 
 ## Config
