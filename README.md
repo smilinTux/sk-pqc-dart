@@ -92,6 +92,48 @@ LD_LIBRARY_PATH=$HOME/.local/lib SK_PQC_LIBOQS=$HOME/.local/lib/liboqs.so \
 
 ---
 
+## Rust core via FFI (optional `rust_core.dart`)
+
+The DM-ratchet docs above call the pure-Dart key schedule a **bridge** to a future
+shared Rust core. That core now exists: `package:sk_pqc/rust_core.dart` backs the same
+Dart API with the **`sk-pqc-rs`** crate (ML-KEM-768 via RustCrypto `ml-kem` — **FIPS
+203** — and X25519 via `x25519-dalek`) over
+[flutter_rust_bridge](https://github.com/fzyzcjy/flutter_rust_bridge). It is the Dart
+twin of that crate's proven **PyO3** binding: ONE Rust crypto core, byte-for-byte
+interoperable across Python, Rust, and Dart.
+
+This is a **separate, optional** import. The default `package:sk_pqc/sk_pqc.dart` stays
+self-contained (liboqs / noble backends, no Rust). Only `rust_core.dart` pulls in
+`package:flutter_rust_bridge` and a compiled `sk-pqc-rs` cdylib.
+
+```sh
+# 1. Build the cdylib from the sibling crate (off-by-default `dart` feature).
+cd ../sk-pqc-rs && cargo build --release --features dart   # → target/release/libsk_pqc.so
+```
+
+```dart
+import 'package:sk_pqc/rust_core.dart';
+
+await SkPqcRustCore.ensureInitialized();              // or (libraryPath: '/abs/libsk_pqc.so')
+final kp  = SkPqcRustCore.generateKeyPair();          // Rust-generated hybrid keypair
+final enc = SkPqcRustCore.encapsulate(kp.publicKey);  // 1120-B ct, 32-B secret
+assert(SkPqcRustCore.decapsulate(enc.ciphertext, kp.privateKey).toString()
+    == enc.sharedSecret.toString());
+final key = SkPqcRustCore.deriveDmMessageKey(epochSecret, 0, 0);   // 32-B DM key
+```
+
+The generated glue lives in [`lib/src/rust/`](lib/src/rust/) (committed — no codegen
+needed unless `sk-pqc-rs/src/frb_api.rs` changes; the regen command is in the sk-pqc-rs
+README). **Parity** is enforced by [`test/rust_frb_parity_test.dart`](test/rust_frb_parity_test.dart):
+the Rust-via-frb outputs match this package's pure-Dart implementation **byte-for-byte**
+on the shared KAT vectors, with hybrid-KEM cross-decapsulation proven in both directions.
+It is a native binding (web/wasm is future work) and self-skips when the cdylib is absent.
+
+> Same honest claim: `x25519-mlkem768` is **hybrid** (secure if *either* leg holds), not
+> "quantum-proof", and KEM-only (signatures / FIPS 204 are out of scope).
+
+---
+
 ## Architecture
 
 One Dart API (`HybridKem`) fans out to two audited ML-KEM backends chosen at

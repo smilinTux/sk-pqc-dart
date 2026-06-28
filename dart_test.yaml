@@ -1,0 +1,11 @@
+# Test tags.
+#
+# `frb` marks the flutter_rust_bridge parity suite (test/rust_frb_parity_test.dart):
+# it needs the sk-pqc-rs cdylib built `--features dart` and the native liboqs lib
+# on the loader path. That suite self-skips cleanly when the cdylib is absent, so
+# it is safe to run by default; declaring the tag here just silences the
+# "tag not specified" warning and lets you select/skip it:
+#   dart test -t frb        # only the Rust-core parity suite
+#   dart test -x frb        # everything except it
+tags:
+  frb:

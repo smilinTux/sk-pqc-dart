@@ -21,6 +21,12 @@ dependencies:
   cryptography: ^2.7.0
   ffi: ^2.1.0
   web: ^1.0.0
+  # Runtime for the OPTIONAL flutter_rust_bridge binding to the sk-pqc-rs core
+  # (lib/src/rust/, generated from sk-pqc-rs built `--features dart`). Pinned to
+  # the codegen version. The pure-Dart KEM + ratchet path does NOT need this — it
+  # backs only the Rust-core-over-FFI parity binding (see README "Rust core via
+  # FFI"). `flutter_rust_bridge` runs in pure Dart (no Flutter SDK required).
+  flutter_rust_bridge: 2.12.0
 
 dev_dependencies:
   lints: ^5.0.0
