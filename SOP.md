@@ -1,41 +1,76 @@
-# sk_pqc — Standard Operating Procedures
+# sk_pqc - Standard Operating Procedures
 
-`sk_pqc` is a sovereign **hybrid post-quantum key-encapsulation** library for Dart
-and Flutter. It exposes **one** `HybridKem` Dart API and runs the **same** suite —
-**`x25519-mlkem768`** (X25519 + ML-KEM-768, FIPS 203) — on **web** and **native**
-behind a conditional import. The only original cryptographic code is the
-**HKDF-SHA256 hybrid combiner**; the lattice and curve primitives are **bound, never
-hand-rolled** (liboqs on native, `@noble/post-quantum` on web, `package:cryptography`
-for X25519 on both).
-
-**Maturity tier:** **T2 — Hybrid KEM** for key exchange (the `HKDF(X25519 ‖ MLKEM768)`
-combiner neutralises Harvest-Now-Decrypt-Later on anything that wraps a key through
-it). It is **KEM-only and honest about it** — signatures (ML-DSA / SLH-DSA, T3) are
-**out of scope / future work**. This package authenticates nothing by itself.
-
-**Honest-claim posture (non-negotiable, per the SKStacks
-[CRYPTOGRAPHY_STANDARD](https://github.com/smilinTux/skstacks/blob/main/docs/CRYPTOGRAPHY_STANDARD.md)):**
-
-- This is **quantum-resistant** / **post-quantum**. It is **never**
-  "quantum-proof," "quantum-safe," or "unbreakable."
-- Hybrid means the derived secret is **secure if *either* leg holds** — a quantum
-  break of X25519 still leaves ML-KEM-768; a lattice break of ML-KEM-768 falls back
-  to classical X25519. We **combine**, never replace.
-- It targets the **FIPS 203 ML-KEM-768** tier (the internet default, matching TLS
-  `X25519MLKEM768` and Signal PQXDH). It is **not** the CNSA-2.0 ceiling
-  (ML-KEM-1024) — that tier is reserved for a sovereign root.
-- Every external claim must cite **surface + FIPS number + hybrid-vs-classical**.
-- **No web client may claim it is E2E post-quantum**: WebCrypto has no PQC API in any
-  browser (2026), so the web leg's assurance is *disclosed* as resting on the audited
-  pure-JS `@noble/post-quantum`.
-
-**Standards anchored:** FIPS 203 (ML-KEM), FIPS 204/205 (ML-DSA/SLH-DSA — future
-work, cited for scope), RFC 5869 (HKDF), RFC 7748 (X25519), RFC 9180 (HPKE / DHKEM
-construction for the X25519 leg), NIST CSWP 39 (crypto-agility). License: **Apache-2.0**.
+`sk_pqc` is a sovereign **hybrid post-quantum key-encapsulation** library for Dart and
+Flutter. It exposes **one** `HybridKem` API and runs the **same** suite,
+**`x25519-mlkem768`** (X25519 + ML-KEM-768, FIPS 203), on **web** and **native** behind
+a conditional import. Callers: Flutter/Dart clients in the SK ecosystem that need a
+post-quantum key wrap.
 
 ---
 
-## Architecture
+## 1. Overview
+
+### Purpose and scope
+
+`sk_pqc` derives a **32-byte hybrid shared secret** that two parties can agree on
+without either one being able to compute it from a classical break alone. The only
+original cryptographic code is the **HKDF-SHA256 hybrid combiner**; the lattice and
+curve primitives are **bound, never hand-rolled** (liboqs on native,
+`@noble/post-quantum` on web, `package:cryptography` for X25519 on both).
+
+### What it owns
+
+- The `HybridKem` Dart API and its two conditional-import backends (web / native).
+- **The combiner**, `HKDF-SHA256(IKM = X25519_ss || MLKEM768_ss)`, X25519 first. This
+  is the interop contract with the `sk-pqc-py` and `sk-pqc-rs` siblings.
+- The wire-format sizes and the suite id `x25519-mlkem768`.
+- A thin DM epoch-ratchet bridge (`lib/src/dm_ratchet.dart`).
+
+### What it explicitly does NOT do
+
+- **It authenticates nothing.** This is a KEM. It provides no signatures, no identity
+  binding, and no peer authentication. An unauthenticated KEM is trivially
+  machine-in-the-middled: **you must authenticate the public keys out of band.**
+- **No signatures.** ML-DSA / SLH-DSA (T3) are out of scope and are not planned here.
+- **No transport, no session, no key storage.** Those belong to the consuming app.
+- **No self-report.** See section 9: the self-report obligation is discharged by the
+  **consumer**, not by this package.
+
+### Maturity tier
+
+**T2, Hybrid KEM** for key exchange. The combiner neutralises Harvest-Now-Decrypt-Later
+on anything that wraps a key through it. Full per-axis detail and the version
+reference are in **section 9**.
+
+### Honest-claim posture (non-negotiable)
+
+Per [sk-standards `standards/CRYPTOGRAPHY_STANDARD.md`](https://github.com/smilinTux/sk-standards/blob/main/standards/CRYPTOGRAPHY_STANDARD.md):
+
+- This is **quantum-resistant** / **post-quantum**. It is **never** "quantum-proof",
+  "quantum-safe", or "unbreakable".
+- Hybrid means the derived secret is **secure if *either* leg holds**. A quantum break
+  of X25519 still leaves ML-KEM-768; a lattice break of ML-KEM-768 falls back to
+  classical X25519. We **combine**, never replace.
+- It targets the **FIPS 203 ML-KEM-768** parameter set (the internet default, matching
+  TLS `X25519MLKEM768` and Signal PQXDH). It is **not** the CNSA-2.0 ceiling
+  (ML-KEM-1024); that is reserved for a sovereign root. Note this is an **algorithm
+  parameter set**, not the T0-T4 maturity tier in section 9. The two are different
+  scales and are easy to confuse.
+- Every external claim must cite **surface + FIPS number + hybrid-vs-classical**.
+- **No web client may claim it is end-to-end post-quantum.** WebCrypto has no PQC API
+  in any browser (2026), so the web leg's assurance is *disclosed* as resting on the
+  audited pure-JS `@noble/post-quantum`.
+- AES-256 is **not** quantum-broken. It is symmetric, and Grover only halves the
+  effective strength.
+
+**Standards anchored:** FIPS 203 (ML-KEM), FIPS 204/205 (ML-DSA/SLH-DSA, cited only to
+scope them **out**), RFC 5869 (HKDF), RFC 7748 (X25519), RFC 9180 (HPKE / DHKEM
+construction for the X25519 leg), NIST CSWP 39 (crypto-agility). License:
+**Apache-2.0**.
+
+---
+
+## 2. Architecture
 
 ### (a) One `HybridKem` API → two backends (web / native)
 
@@ -205,10 +240,11 @@ flowchart TD
 
 ---
 
-## Build / Deploy
+## 3. Build
 
-`sk_pqc` is a **published Dart package** (pub.dev), not a deployed service. "Deploy"
-means: (1) build the native ML-KEM binary per target, or (2) provide the web JS dep.
+This section covers building the **ML-KEM dependency** each backend needs at
+runtime: (1) the native shared library, or (2) the web JS shim. Publishing the
+package itself is section 5.
 
 ### Native (dart:ffi → liboqs)
 
@@ -256,6 +292,82 @@ globalThis.skPqc = {
 };
 ```
 
+---
+
+## 4. Test
+
+```bash
+dart pub get
+
+# Combiner KATs run anywhere. Native FFI + cross-backend tests need liboqs
+# (and, for cross-backend, node + @noble/post-quantum); they skip cleanly if absent.
+LD_LIBRARY_PATH=$HOME/.local/lib \
+SK_PQC_LIBOQS=$HOME/.local/lib/liboqs.so \
+SK_PQC_NOBLE_DIR=/path/to/noble \
+dart test
+```
+
+| Suite | File | Covers |
+|---|---|---|
+| Combiner vectors | `test/combiner_test.dart` | HKDF-SHA256 vs RFC 5869 §A.1 + hand-computed; salt/info domain separation; wrong-length rejection |
+| ML-KEM-768 KAT | `test/native_ffi_test.dart` | decapsulating the FIPS 203 / NIST ACVP-anchored vector yields the standard secret |
+| Cross-backend | `test/cross_backend_test.dart` | noble ↔ liboqs both directions; both decapsulate the shared interop vector identically |
+| Round-trip + property | (above) | generate → encapsulate → decapsulate; two encaps to the same key differ |
+| Failure cases | (above) | malformed keys/ct throw `SkPqcError`; tampered ML-KEM ct → implicit rejection |
+
+---
+
+## 5. Release / Deploy
+
+`sk_pqc` is a **library published to pub.dev**, not a deployed service. Section 3
+covers building the native/web crypto dependency; this section covers **shipping the
+package itself**.
+
+### 5.1 Where the version comes from
+
+The single source of truth is **`version:` in `pubspec.yaml`**. Do not hard-code a
+version anywhere else: the publish workflow is triggered by a tag whose name must
+match it, so a drifted copy produces a tag that publishes the wrong thing or nothing.
+
+`0.1.0` is published on pub.dev at the time of writing. Confirm the current published
+version at <https://pub.dev/packages/sk_pqc> rather than trusting this sentence.
+
+### 5.2 Publish flow
+
+Publishing is **automated via OIDC** (`.github/workflows/publish.yml`), so no pub.dev
+token is stored in the repo. The workflow calls
+`dart-lang/setup-dart/.github/workflows/publish.yml@v1` with the `pub.dev`
+environment, and it triggers **only on a tag** matching `v[0-9]+.[0-9]+.[0-9]+`.
+
+```bash
+# 1. bump `version:` in pubspec.yaml
+# 2. add a dated CHANGELOG.md entry (pub.dev renders it, and scores the package on it)
+# 3. green-bar gate, section 4
+# 4. cross-impl vectors must be green (section 2c) - this is the release blocker
+git tag vX.Y.Z          # the tag MUST match pubspec `version:` exactly
+git push origin vX.Y.Z  # pushing the TAG is what publishes
+```
+
+> **Push the tag deliberately.** A tag push is a publish. Never push a tag to try
+> something out, and never push a tag from a branch you have not verified.
+
+One-time setup (browser, by the repo owner, only after the package exists): pub.dev →
+`sk_pqc` → Admin → Automated publishing → enable GitHub Actions for
+`smilinTux/sk-pqc-dart` with tag pattern `v{{version}}`. The very first publish
+required an interactive `dart pub login`; automated publishing covers updates.
+
+### 5.3 Rollback
+
+**pub.dev releases are immutable.** There is no delete. To roll back:
+
+1. **Retract** the bad version on pub.dev (Admin → Versions → Retract). Retraction
+   stops new resolutions from picking it while leaving existing pinned builds working.
+2. Publish a fixed patch `X.Y.Z+1`.
+
+A **wire-format or combiner change is not a patch**. It breaks every peer, including
+the Python and Rust siblings. Coordinate a **suite-id bump** (a new `kSuiteId`) with
+`sk-pqc-py` and `sk-pqc-rs` in lockstep instead of silently changing the derivation.
+
 ### Front-end / Exposure
 
 Per [sk-standards `UNIFIED_INGRESS_STANDARD.md`](https://github.com/smilinTux/sk-standards/blob/main/standards/UNIFIED_INGRESS_STANDARD.md):
@@ -264,7 +376,7 @@ daemon, port, or listener and answers no public `:443` route.
 
 ---
 
-## Config
+## 6. Configuration / Usage
 
 | Knob | Where | Effect |
 |---|---|---|
@@ -276,7 +388,7 @@ daemon, port, or listener and answers no public `:443` route.
 
 ---
 
-## API / Usage Reference
+## 7. API / Reference
 
 ```dart
 import 'package:sk_pqc/sk_pqc.dart';
@@ -307,30 +419,7 @@ python3 tool/verify_vector.py
 
 ---
 
-## Testing
-
-```bash
-dart pub get
-
-# Combiner KATs run anywhere. Native FFI + cross-backend tests need liboqs
-# (and, for cross-backend, node + @noble/post-quantum); they skip cleanly if absent.
-LD_LIBRARY_PATH=$HOME/.local/lib \
-SK_PQC_LIBOQS=$HOME/.local/lib/liboqs.so \
-SK_PQC_NOBLE_DIR=/path/to/noble \
-dart test
-```
-
-| Suite | File | Covers |
-|---|---|---|
-| Combiner vectors | `test/combiner_test.dart` | HKDF-SHA256 vs RFC 5869 §A.1 + hand-computed; salt/info domain separation; wrong-length rejection |
-| ML-KEM-768 KAT | `test/native_ffi_test.dart` | decapsulating the FIPS 203 / NIST ACVP-anchored vector yields the standard secret |
-| Cross-backend | `test/cross_backend_test.dart` | noble ↔ liboqs both directions; both decapsulate the shared interop vector identically |
-| Round-trip + property | (above) | generate → encapsulate → decapsulate; two encaps to the same key differ |
-| Failure cases | (above) | malformed keys/ct throw `SkPqcError`; tampered ML-KEM ct → implicit rejection |
-
----
-
-## Troubleshooting
+## 8. Troubleshooting
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
@@ -342,24 +431,103 @@ dart test
 | `SkPqcError: bad length` | wrong-sized key/ct on the wire | verify 1216B pub / 2432B priv / 1120B ct — these are fixed and version-pinned |
 | Python vector MISMATCH | combiner drift (XOR, wrong order, wrong info) | combiner MUST be `HKDF-SHA256(X25519_ss ‖ MLKEM_ss)`, X25519 first; rerun `tool/verify_vector.py` |
 | publish blocked: vectors red | wire-format or combiner change | **do not publish** — divergence breaks every peer; revert or coordinate a suite-id bump |
+| your edits vanish, or you are reading code that does not match `origin/main` | **you are in a duplicate checkout.** This remote is cloned to **two** local paths that look like separate repos: `~/clawd/skcapstone-repos/sk-pqc-dart` **and** `~/clawd/skcapstone-repos/sk_pqc`. The second is the repo's **former name** (GitHub still redirects `smilinTux/sk_pqc`), not a different project. | run `git -C <path> remote get-url origin` before editing. Both were last seen pinned at an older commit than `origin/main`, so code read there can be stale. Do work in a dedicated worktree, and never assume the directory name identifies the repo. |
 
 ---
 
-## Tier reference
+## 9. Maturity-tier + Version reference
+
+### Maturity tier: **T2**
+
+Scale: [sk-standards `standards/CRYPTOGRAPHY_STANDARD.md`](https://github.com/smilinTux/sk-standards/blob/main/standards/CRYPTOGRAPHY_STANDARD.md).
+This is the T0-T4 **maturity** scale. It is **not** the FIPS 203 parameter-set tier
+(ML-KEM-768 vs 1024) discussed in section 1; do not conflate the two.
 
 | Tier | Meaning | `sk_pqc` status |
 |---|---|---|
-| **T0 — Classical** | asymmetric crypto is classical (X25519/Ed25519/RSA) | superseded for KEM |
-| **T1 — Agile** | suite-ids + registry + backend ABC + self-report | ✅ suite id `x25519-mlkem768`, one backend ABC, conditional-import providers |
-| **T2 — Hybrid KEM** | key exchange uses `HKDF(X25519 ‖ MLKEM768)`; HNDL neutralised | ✅ **this is `sk_pqc`'s tier** |
-| **T3 — Hybrid sig** | signatures use ML-DSA-65 + Ed25519 (additive) | ❌ out of scope — future work |
-| **T4 — Transport closed** | edge-to-origin TLS hybrid; residual classical legs documented | n/a (library, not transport) |
+| **T0, Classical** | asymmetric crypto is classical (X25519/Ed25519/RSA) | superseded for KEM |
+| **T1, Agile** | suite-ids + registry + backend ABC + **self-report** | **partial.** Suite id `kSuiteId = 'x25519-mlkem768'`, one backend interface, conditional-import providers. **There is no self-report**, see below. |
+| **T2, Hybrid KEM** | key exchange uses `HKDF(X25519 \|\| MLKEM768)`; HNDL neutralised | **met. This is `sk_pqc`'s tier.** |
+| **T3, Hybrid sig** | signatures use ML-DSA-65 + Ed25519 (additive) | **not met, and out of scope.** This package signs nothing. |
+| **T4, Transport closed** | edge-to-origin TLS hybrid; residual classical legs documented | **N/A**, this is a library with no transport leg. |
 
-**Self-report obligation:** a consuming component MUST be able to report, per live
-channel, the negotiated KEM (`x25519-mlkem768`) and **hybrid-vs-classical**, citing
-**FIPS 203** — that self-report is what turns every claim into evidence rather than
-assertion (CRYPTOGRAPHY_STANDARD §5).
+### Self-report: deferred to the consumer, by design
+
+**`sk_pqc` has no self-report function.** It does not expose a `selfReport()`, and it
+cannot: a self-report describes a **live channel** (which suite was negotiated, whether
+the peer was hybrid or classical), and this package has no channel, no session, and no
+peer. It is a stateless KEM.
+
+What it exposes instead is the raw material for one:
+
+| Symbol | Where | Value |
+|---|---|---|
+| `kSuiteId` | `lib/src/types.dart` | `'x25519-mlkem768'` |
+| `HybridKem.suiteId` | `lib/src/hybrid_kem.dart` | returns `kSuiteId` |
+
+**The obligation therefore sits with the consuming component**, which MUST be able to
+report, per live channel, the negotiated KEM (`x25519-mlkem768`) and
+**hybrid-vs-classical**, citing **FIPS 203**. That report is what turns a claim into
+evidence rather than assertion (CRYPTOGRAPHY_STANDARD section 5). If you are building
+on `sk_pqc` and you have not implemented that report, **your** component does not meet
+T1, regardless of what this package provides.
+
+### Version reference
+
+- **Source of truth:** `version:` in `pubspec.yaml`. Nothing else may restate it.
+- **Published:** on pub.dev as `sk_pqc`. Check
+  <https://pub.dev/packages/sk_pqc> for the current version.
+- **Dart SDK constraint:** `environment: sdk: ^3.5.0` in `pubspec.yaml`.
+- **Wire format is frozen across `0.x`.** The suite id, the combiner ordering, and the
+  byte lengths are the interop contract with `sk-pqc-py` and `sk-pqc-rs`. Any break
+  ships under a **new suite id**, with all three siblings updated in lockstep, never as
+  a silent patch.
 
 ---
 
-**SK = staycuriousANDkeepsmilin 🐧** — *sk_pqc: hybrid post-quantum KEM, honest about KEM-only.*
+## Unverified / needs an operator pass
+
+Stated in this SOP but **not** re-executed while it was written:
+
+- **The test suite was not run.** The Dart SDK is not installed on the machine where
+  this SOP was revised, so section 4's table was read from `test/`, not executed. The
+  claim "these tests exist and cover X" is verified; "they pass today" is CI's to
+  assert, via `.github/workflows/test.yml`.
+- **`tool/verify_vector.py` was not run here.** It needs `liboqs-python` plus pyca
+  `cryptography`. The output shown in section 7 is the recorded expected output, not a
+  fresh run.
+- **Per-platform bundling** (Android ABIs, iOS/macOS XCFramework, Windows DLL) in
+  section 3 is a **plan**, not a shipped artifact. Only Linux desktop with liboqs
+  0.14.0 is described as proven, and that was not re-proven here.
+- **The liboqs lookup order** in section 3 was read from
+  `lib/src/mlkem_provider_ffi.dart`; only the `SK_PQC_LIBOQS` override is pinned by the
+  evidence block.
+
+---
+
+**SK = staycuriousANDkeepsmilin** *sk_pqc: hybrid post-quantum KEM, honest about KEM-only.*
+
+---
+
+<!-- docs-evidence
+verified: 2026-08-15
+checks:
+  - name: suite id still matches the documented wire value (SOP 1, 9)
+    run: grep -qE "^const String kSuiteId = 'x25519-mlkem768';" lib/src/types.dart
+  - name: HybridKem exposes suiteId, the consumer self-report input (SOP 9)
+    run: grep -qF 'String get suiteId => kSuiteId;' lib/src/hybrid_kem.dart
+  - name: combiner IKM is X25519 FIRST, then ML-KEM (SOP 2b, the interop invariant)
+    run: grep -qF '..setAll(0, x25519SharedSecret)' lib/src/combiner.dart && grep -qF '..setAll(x25519SharedSecret.length, mlkem768SharedSecret)' lib/src/combiner.dart
+  - name: combiner KDF is HKDF-SHA256 with a 32-byte output (SOP 2b)
+    run: grep -qF 'hmac: Hmac.sha256(),' lib/src/combiner.dart && grep -qE 'static const int sharedSecret = 32;' lib/src/types.dart
+  - name: default HKDF info label unchanged (SOP 6)
+    run: grep -qF "static const String defaultInfo = 'sk_pqc/x25519-mlkem768/v1';" lib/src/combiner.dart
+  - name: ML-KEM-768 component sizes match the documented wire format (SOP 7, 8)
+    run: grep -qE 'static const int mlkem768PublicKey = 1184;' lib/src/types.dart && grep -qE 'static const int mlkem768Ciphertext = 1088;' lib/src/types.dart && grep -qE 'static const int x25519PublicKey = 32;' lib/src/types.dart
+  - name: documented liboqs override env var still read (SOP 3, 6, 8)
+    run: grep -qF "Platform.environment['SK_PQC_LIBOQS']" lib/src/mlkem_provider_ffi.dart
+  - name: package name and frb pin match the docs (SOP 5)
+    run: grep -qE '^name: sk_pqc$' pubspec.yaml && grep -qE '^  flutter_rust_bridge: 2\.12\.0$' pubspec.yaml
+  - name: cross-impl vectors and entry points named in SOP 2 and 4 exist
+    run: test -f test_vectors/hybrid_kem_x25519_mlkem768.json && test -f test_vectors/combiner_hkdf.json && test -f lib/sk_pqc.dart && test -f lib/src/combiner.dart
+-->

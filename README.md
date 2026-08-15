@@ -194,6 +194,28 @@ flowchart TD
 - This is **not** "quantum-proof," "unbreakable," or "quantum-safe." Lattice
   cryptography is young. The defensible words are **"post-quantum"** /
   **"quantum-resistant."**
+- **`sk_pqc` has no self-report.** It is a stateless KEM with no channel and no peer,
+  so it cannot describe a live negotiation. It exposes `kSuiteId`
+  (`'x25519-mlkem768'`) and `HybridKem.suiteId`, and the **consuming component** owns
+  the obligation to report the negotiated suite and hybrid-vs-classical per channel.
+  Do not read the presence of a suite id as a self-report.
+
+### Maturity tier: **T2**
+
+Per the [sk-standards `CRYPTOGRAPHY_STANDARD.md`](https://github.com/smilinTux/sk-standards/blob/main/standards/CRYPTOGRAPHY_STANDARD.md)
+**T0-T4 maturity** scale. This is a **different scale** from the FIPS 203 ML-KEM-768
+parameter set mentioned above; do not conflate "we target the ML-KEM-768 tier" with a
+maturity tier.
+
+| Tier | State |
+|---|---|
+| **T0** Classical | superseded for KEM |
+| **T1** Agile | **partial.** Suite id + one backend interface + conditional-import providers, but **no self-report** (deferred to the consumer, see above). |
+| **T2** Hybrid KEM | **met. This is `sk_pqc`'s tier.** `HKDF(X25519 \|\| ML-KEM-768)`, X25519 first. |
+| **T3** Hybrid sig | **not met, out of scope.** This package signs nothing. |
+| **T4** Transport closed | **N/A**, a library with no transport leg. |
+
+Full per-axis evidence is in [`SOP.md`](SOP.md) section 9.
 
 ---
 

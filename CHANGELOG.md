@@ -2,6 +2,38 @@
 
 ## Unreleased
 
+### Documentation
+
+- **Fixed a broken standards citation (HTTP 404).** `SOP.md`, `SECURITY.md` and
+  `CONTRIBUTING.md` all cited the CRYPTOGRAPHY_STANDARD at
+  `github.com/smilinTux/skstacks/blob/main/docs/CRYPTOGRAPHY_STANDARD.md`, which
+  returns **404** (that repo is private and contains no such file). All three now cite
+  the canonical `github.com/smilinTux/sk-standards/blob/main/standards/CRYPTOGRAPHY_STANDARD.md`
+  (HTTP 200). This repo is public, so a reader checking the crypto-compliance claim was
+  hitting a dead link.
+- `SOP.md` restructured to the 9 canonical SK_REPO_DOC_STANDARD sections, in order.
+  Added an explicit **Overview**, split **Release / Deploy** out of "Build / Deploy",
+  and added a **Maturity-tier + Version reference** section. **Test** now precedes
+  **API**, which was previously reversed.
+- **Stated the maturity tier in `README.md`**, which previously stated none. The only
+  "tier" it mentioned was the FIPS 203 ML-KEM-768 parameter set, a different scale;
+  both files now say so explicitly.
+- **Said plainly that there is no self-report.** The old tier table marked T1 as met.
+  `sk_pqc` exposes only `kSuiteId` / `HybridKem.suiteId`; it is a stateless KEM with no
+  channel or peer, so the self-report obligation sits with the **consumer**. T1 is now
+  recorded as **partial**.
+- `SECURITY.md`: added the **experimental / unaudited posture statement** required by
+  SECURITY_DISCLOSURE_STANDARD section 2.
+- **Documented the duplicate checkout hazard** in Troubleshooting: this remote is
+  cloned locally to both `skcapstone-repos/sk-pqc-dart` and `skcapstone-repos/sk_pqc`
+  (the repo's former name, still redirected by GitHub), and both were seen behind
+  `origin/main`.
+- Added a `docs-evidence` block (9 hermetic checks) pinning the suite id, the
+  **combiner ordering invariant** (X25519 first), the HKDF-SHA256 + 32-byte output, the
+  default info label, the ML-KEM-768 wire sizes, the `SK_PQC_LIBOQS` override, and the
+  `flutter_rust_bridge` pin. Added an "Unverified / needs an operator pass" section.
+- Added `.github/workflows/docs-check.yml` (tiers 1,2).
+
 ### Added
 - **`package:sk_pqc/rust_core.dart`** (optional) — backs the Dart API with the shared
   `sk-pqc-rs` Rust core (ML-KEM-768 via RustCrypto `ml-kem`, FIPS 203; X25519 via
