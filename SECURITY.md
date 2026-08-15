@@ -7,10 +7,21 @@ below before relying on it or reporting an issue.
 
 ---
 
+> ⚠️ **Experimental, pre-1.0, NOT independently security-audited.** No third-party
+> security audit, fuzzing, or formal review has been performed on `sk_pqc`. The
+> primitives bind vetted upstreams (liboqs / ML-KEM on native, the audited pure-JS
+> `@noble/post-quantum` on web, `package:cryptography` for X25519 and HKDF); the
+> original code is the **hybrid combiner** and the wiring around it. A passing test
+> suite proves interop and byte-for-byte agreement with the Python and Rust siblings,
+> **not** the absence of side-channels or protocol flaws. **Review it yourself before
+> production use.**
+
+---
+
 ## Honest claims (what this library does and does NOT promise)
 
-Per the SKStacks
-[CRYPTOGRAPHY_STANDARD](https://github.com/smilinTux/skstacks/blob/main/docs/CRYPTOGRAPHY_STANDARD.md),
+Per the sk-standards
+[CRYPTOGRAPHY_STANDARD](https://github.com/smilinTux/sk-standards/blob/main/standards/CRYPTOGRAPHY_STANDARD.md),
 every security claim is scoped to **surface + FIPS number + hybrid-vs-classical**.
 
 - ✅ **Quantum-resistant / post-quantum key encapsulation.** The 32-byte derived

@@ -13,8 +13,8 @@ contributions are licensed under **Apache-2.0**.
 
 ## Ground rules (read before you write code)
 
-These come straight from the SKStacks
-[CRYPTOGRAPHY_STANDARD](https://github.com/smilinTux/skstacks/blob/main/docs/CRYPTOGRAPHY_STANDARD.md)
+These come straight from the sk-standards
+[CRYPTOGRAPHY_STANDARD](https://github.com/smilinTux/sk-standards/blob/main/standards/CRYPTOGRAPHY_STANDARD.md)
 and are enforced in review:
 
 1. **We bind vetted crypto; we never hand-roll primitives.** The lattice and curve
